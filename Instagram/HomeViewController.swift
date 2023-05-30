@@ -73,6 +73,8 @@ class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDe
         // セル内のボタンのアクションをソースコードで設定する
         cell.likeButton.addTarget(self, action:#selector(handleButton(_:forEvent:)), for: .touchUpInside)
         
+        cell.commentButton.addTarget(self, action: #selector(cmtButton(_:forEvent:)), for: .touchUpInside)
+        
         return cell
     }
     
@@ -105,4 +107,31 @@ class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDe
         }
     }
     
+    // コメント送信ボタンがタップされた時に呼ばれるメソッド
+    @objc func cmtButton(_ sender: UIButton, forEvent event: UIEvent) {
+        print("DEBUG_PRINT: コメント送信ボタンがタップされました。")
+        //tableView.reloadData()
+        // タップされたセルのインデックスを求める
+        let touch = event.allTouches?.first
+        let point = touch!.location(in: self.tableView)
+        guard let indexPath = tableView.indexPathForRow(at: point) else { return}
+        let cell = tableView.cellForRow(at: indexPath) as! PostTableViewCell
+        // 配列からタップされたインデックスのデータを取り出す
+        let postData = postArray[indexPath.row]
+        if let commentText = cell.commentTextField.text {
+            if commentText != "" {
+                print(commentText)
+                let commentName = Auth.auth().currentUser?.displayName
+                // TODO: 強制アンラップ後で直す
+                let comment = "\(commentName!):\(commentText)"
+                // 更新データを作成する
+                var updateValue: FieldValue
+                updateValue = FieldValue.arrayUnion([comment])
+                // likesに更新データを書き込む
+                let postRef = Firestore.firestore().collection(Const.PostPath).document(postData.id)
+                postRef.updateData(["comment": updateValue])
+            }
+        }
+        cell.commentTextField.text = ""
+    }
 }
