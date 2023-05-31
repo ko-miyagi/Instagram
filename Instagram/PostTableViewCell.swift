@@ -66,5 +66,8 @@ class PostTableViewCell: UITableViewCell {
         }
         self.commentLabel.text = str
         print(str)
+        
+        //TextFieldの値をリセット
+        self.commentTextField.text = ""
     }
 }
